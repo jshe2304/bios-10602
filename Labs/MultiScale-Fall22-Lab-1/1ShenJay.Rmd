@@ -1,0 +1,242 @@
+---
+title: "Lab 1 Answer Sheet"
+author: "BIOS 10602 - Multiscale Modeling of Biological Systems"
+date: "9/27/2022"
+output: html_document
+---
+
+## Part 3: R Markdown
+
+3.1
+```{r}
+pi * 3.22e6
+```
+
+3.2
+```{r}
+pi %% 1.2
+```
+
+## Part 4: Variable Assignment
+
+4.1 a
+<span style="color:blue"> value </span>
+
+4.1 b
+<span style="color:blue"> if the variable stored an expression the expression would run every time the variable was called, and any updates to variables within the expression would be reflected in the variables value. In short, the expression can change but the value cannot. </span>
+
+4.2
+<span style="color:blue"> the c() function takes all the arguments passed into it and forms an iterable data structure that stores all those arguments and is able to do things such as iterate and print a list </span>
+
+```{r}
+myVec <- c(2, 4, 6, 8, 10, 12, 14, 16, 18, 20)
+myVec
+```
+
+4.3 a
+```{r}
+myNewVec <- myVec + 4
+```
+
+4.3 b
+<span style="color:blue"> The above operation creates a new vector and fills it with the items in myVec plus four </span>
+
+4.4
+```{r}
+mean(myVec)
+```
+
+4.5 a
+```{r}
+heartRate <- seq(60, 100, 5)
+```
+
+4.5 b
+```{r}
+averageEjection <- 70
+ejectionVolumes <- heartRate * averageEjection * 35
+```
+
+4.6 a
+<span style="color:blue"> Sets the first element of the myVec vector to 3 given it exists </span>
+
+4.6 b
+<span style="color:blue"> Prints sequential elements from myVec starting from the second element and ending at the 5th element, inclusive.my </span>
+
+4.6 c
+<span style="color:blue"> Prints the elements from myVec whose positions are in the vector inside the square bracketsm </span>
+
+4.6 d
+<span style="color:blue"> Lists the elements in myVec except for that whose position corresponds to the number after the negative sign in the square brackets. In this case it excludes the 5th element of myVec </span>
+
+4.6 e
+<span style="color:blue"> Prints myVec except all elements are multiplied by 3 </span>
+
+## Part 5: Logical Expressions
+
+5.1
+<span style="color:blue"> 
+!= checks if objects are unequal
+== checks if objects are equal
+<= checks if first object is less than or equal to the second
+>= checks if first object is greater than or equal to the second
+< checks if first object is less than the second
+> checks if first object is greater than the second
+</span>
+
+5.2
+<span style="color:blue"> || checks if at least one expression is true. Will return TRUE if comparing at least one TRUE expression. Will return FALSE only if neither expression is True. && differs in that it requires the two expressions to both be TRUE for it to return TRUE </span>
+
+5.3
+<span style="color:blue"> F, T, T, F, F, T, T, F, T, T, F, F </span>
+
+5.4
+<span style="color:blue"> R goes through multiplesOfFive and if the corresponding logical value in notDivisibleByTen is TRUE, the element in multiplesOfFive is added to a cumulative vector. The vector is returned. Or, all elements in multiplesOfFive not divisible by 10 are put in a vector which is then returned. </span>
+
+5.5 a
+<span style="color:blue"> If tasked with math using logical values, R treats TRUE and FALSE as 1 and 0, respectively </span>
+
+5.5 b
+<span style="color:blue"> One benefit may be that it will be easier to maintain a counter that checks how many times a given condition is satisfied. ie. count <- count + (x < 10FAL) </span>
+
+## Part 6: Control Flow: if, else
+
+6.1
+<span style="color:blue"> Since FALSE and 0 are considered equal, at least when making decisions, the if statement is essentially evaluating FALSE when it evaluates a lone 0. Thus the program does not satisfy the condition and moves to execute the else clause </span>
+
+6.2 a
+<span style="color:blue"> The variables are assigned their values. At the if statement, carSpeed is compared to speedLimit. carSpeed, 65, is less than 75, which does not satisfy the requirement that carSpeed be greater than speedLimit. Thus the code under if is not allowed to run and the else code is run instead.  </span>
+
+6.2 b
+<span style="color:blue"> The variables are assigned their values. At the if statement, carSpeed is compared to speedLimit. carSpeed, 90, is greater than 75, which satisfies the requirement that carSpeed be greater than speedLimit. Thus the code under if is run and the else code is skipped afterward. </span>
+
+6.3
+```{r}
+bodyTemp <- 1000
+
+if (bodyTemp < 36.5 || bodyTemp > 37.2) {
+  print ("seek medical attention")
+} else {
+  print ("do nothing")
+}
+```
+
+6.4
+```{r}
+grade = 20
+
+if (grade >= 80) {
+  if (grade >= 90) {
+    print ("Amazing!")
+  } else {
+    print ("Good!")
+  }
+} else {
+  print ("Come see me after class")
+}
+```
+
+## Part 7: Control Flow - Loops
+
+7.1 a
+<span style="color:blue"> For each number between 1 and 10, inclusive, print that number multiplied by 2 </span>
+
+7.1 b
+<span style="color:blue"> i is defined at first line of the for loop within the parentheses. It is reassigned with each iteration as specified by the statement after 'in' </span>
+
+7.1 c
+<span style="color:blue"> Yes </span>
+
+7.1 d
+<span style="color:blue"> No </span>
+
+7.2 a
+<span style="color:blue"> If x%%2 returns 0 it is even otherwise odd given x is an nonzero integer. </span>
+
+7.2 b
+```{r}
+for (i in 1:12) {
+  if (!(i%%2) || i == 7) {
+    print (i)
+  }
+}
+```
+
+7.3
+```{r}
+for (letter in letters) {
+  print (toupper(letter))
+}
+```
+
+7.4 a
+<span style="color:blue"> Each iteraton, the program decrements x by 1. Since x is instantiated as -10, it will never increase and never be greater than 0 to violate the while condition and break the loop</span>
+
+7.4 b
+<span style="color:blue"> Instead of decrementing x by 1, increment it by some positive value. </span>
+
+7.5 a
+<span style="color:blue"> Run indefinietly. </span>
+
+7.5 b
+```{r}
+
+x <- 2  
+while(x <=  5){  
+  x <- x + x
+}  
+```
+
+## Part 8: Functions in R
+
+8.1 a
+```{r}
+findCube <- function(n) {
+  return (n^3)
+}
+```
+
+8.1 b
+```{r}
+cubed <- findCube(529)
+```
+
+8.2
+<span style="color:blue"> Unless the arguments are specifically assigned to one of the functions variables (ie x, y, or z), the arguments are assigned in order in which they appear (ie the first argument is assigned to x, the second to y, the third to z) </span>
+
+8.3 a
+```{r}
+calcMean <- function(myVec) {
+  return (sum(myVec)/length(myVec))
+}
+```
+
+8.3 b
+```{r}
+calcMean(c(3:14))
+```
+
+8.3 c
+```{r}
+mean(c(3:14))
+```
+
+8.4 a
+```{r}
+hplus <- numeric(14)
+
+for(pH in 1:14) {
+    hplus[pH] <- 10^(-pH)
+}
+```
+
+8.4 b
+```{r}
+H_from_pH <- function(pH) {
+  return (10^(-pH))
+}
+
+OH_from_pH <- function(pH) {
+  return (10^(-(14-pH)))
+}
+```

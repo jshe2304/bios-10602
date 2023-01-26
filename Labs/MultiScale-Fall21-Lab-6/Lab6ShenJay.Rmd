@@ -1,0 +1,222 @@
+---
+title: "Lab 6 Answer Sheet"
+author: "BIOS 10602 - Multiscale Modeling of Biological Systems"
+date: "9/22/2021"
+output: html_document
+---
+
+## Part 1: Local Sequence Alignment Continued
+
+1.1
+```{r}
+alignmentMatrix <- function(seq1, seq2, scoreMat){
+  amatrix<- matrix(0, ncol=length(x)+1, nrow=length(y)+1)
+  rownames(amatrix) <- c("", y)
+  colnames(amatrix) <- c("", x)
+  
+  gap <- scoreMat["-", ][[1]]
+  
+  for(i in 2:nrow(amatrix)) {
+    for(j in 2:ncol(amatrix)) {
+        l = amatrix[i-1, j] + gap
+        t = amatrix[i, j-1] + gap
+        lt = amatrix[i-1, j-1] + scoreMat[rownames(amatrix)[i], colnames(amatrix)[j]]
+        amatrix[i, j] <- max(l, t, lt, 0)
+    }
+  }
+  return(amatrix)
+}
+```
+
+
+1.2
+```{r}
+y <- strsplit("GATCCATTAAGCGCAAATGGCCA", "")[[1]]
+x <- strsplit("GATTTCAGGCAGTACA", "")[[1]]
+
+lut <- matrix(-1, 5, 5)
+diag(lut) <- 3
+dimnames(lut) <- list(c("A", "C", "G", "T", "-"), c("A", "C", "G", "T", "-"))
+lut[, "-"] <- -2
+lut["-", ] <- -2
+
+alignmentMatrix(x, y, lut)
+```
+<span style="color:blue"> Your answer here. \span  
+
+1.3
+```{r}
+source("pairAlign.R")
+pairAlign("GATCCATTAAGCGCAAATGGCCA", "GATTTCAGGCAGTACA", substitutionMatrix = "lut", gapExtension = -2, type = "local")
+```
+
+<span style="color:blue"> 22 \span  
+
+```{r}
+#modified version of generateSeqsWithMultinomialModel() from https://a-little-book-of-r-for-bioinformatics.readthedocs.io/en/latest/src/chapter4.html
+
+generateSeqs <- function(inputsequence, X){
+  #split inputted string into vector of individual characters
+  inputsequencevector <- strsplit(inputsequence,"")[[1]]
+  mylength <- length(inputsequencevector)
+  mytable <- table(inputsequencevector)
+  letters <- rownames(mytable) 
+  probabilities <- mytable/mylength #store the probabilities of letters
+  
+  #sample total number of characters needed to generate X random sequences of length myLength
+  seqset <- sample(letters, mylength*X, rep=TRUE, prob=probabilities) 
+  
+  #apply paste0() to collapse vector of characters into a vector of character strings of the original length
+  seqs <- vapply(seq(1, mylength*X, mylength), function(i) paste0(seqset[i:(i+(mylength-1))], collapse = ''), inputsequence)
+  
+  return(seqs)
+}
+```
+
+1.4
+```{r}
+y <- strsplit("MVWHDVDEGFHTAVW", "")[[1]]
+x <- strsplit("AHDVGVWGHDD", "")[[1]]
+pairAlign("MVWHDVDEGFHTAVW", "AHDVGVWGHDD", substitutionMatrix = "BLOSUM62", gapOpening = -12, gapExtension = -3, type = "global")
+```
+<span style="color:blue"> -22 \span  
+
+1.5
+```{r}
+scores <- numeric(2000)
+seqs <- generateSeqs("MVWHDVDEGFHT", 2000)
+
+for (i in 1:length(seqs)) {
+  scores[i] <- pairAlign(seqs[i], "AHDVGVWGHDD", substitutionMatrix = "BLOSUM62", gapOpening = -10, gapExtension = -2, scoreOnly = TRUE, type="global")
+}
+```
+
+1.6
+```{r}
+hist(scores, xlab="Alignment Scores", ylab="Counts", main="Histogram of alignment scores")
+
+count <- 0
+for (score in scores) {
+  if (score >= -22) {
+    count <- count + 1
+  }
+}
+
+count/length(seqs)
+```
+
+1.7
+<span style="color:blue"> From the 2000 alignments, a proportion of 0.9435 of alignment scores calculated were greater than or equal to the score, -22, from part 1.4. This implies that the sequence MVWHDVDEGFHT is likely not related to sequence AHDVGVWGHDD as even compared to permutations of itself, it aligns poorly. \span 
+
+
+## Part 2: Multiple sequence alignment
+
+```{r}
+# INPUT ARGUMENTS
+# patterns : list of char vectors
+#            each vector patterns[[i]] contains the version of the CENTER sequence that arises from the pairwise alignment between the center sequence and sequence[i]
+# subjects : list of char vectors
+#            each vector subjects[[i]] contains the alignment of sequence[i] after a pairwise alignment with the center sequence
+# center   : integer
+#            index of the sequence in the original sequence list that is the center. 
+buildMSA <- function(patterns, subjects, center) {
+    MSA <- rbind(patterns[[1]], subjects[[1]])
+    for(i in 2:length(patterns)) {
+        j = 1 #index in new row
+        k = 1 #index in alignment of center sequence to sequence i
+        m = 1 #column index of MSA
+        maxLength = ncol(MSA) + length(patterns[[i]])
+        newRow = character(maxLength)
+        while(k <= length(patterns[[i]]) && m <= ncol(MSA)) {
+            if(patterns[[i]][k] == MSA[1, m]) {
+                newRow[j] <- subjects[[i]][k]
+                j <- j + 1
+                k <- k + 1
+                m <- m + 1
+            } else if(MSA[1, m] == "-") {
+                newRow[j] <- "-"
+                j <- j + 1
+                m <- m + 1
+            } else if(patterns[[i]][k] == "-") {
+                if(m == 1) {
+                    MSA <- cbind(rep("-", nrow(MSA)), MSA)
+                } else {
+                    MSA <- cbind(MSA[, 1:(m-1)], rep("-", nrow(MSA)), MSA[, m:ncol(MSA)])
+                }
+                newRow[j] <- subjects[[i]][k]
+                m <- m + 1
+                j <- j + 1
+                k <- k + 1
+            }
+        }
+        while(k <= length(patterns[[i]])) {
+            MSA <- cbind(MSA, rep("-", nrow(MSA)))
+            newRow[j] <- subjects[[i]][k]
+            k <- k + 1
+            j <- j + 1
+        }
+        while(m <= ncol(MSA)) {
+            newRow[j] <- "-"
+            m <- m + 1
+            j <- j + 1
+        }
+        newRow <- newRow[1:(m - 1)]
+        MSA <- rbind(MSA, newRow)
+    }
+    rownames(MSA) <- c("    Center:", paste0("Sequence ", 1:(nrow(MSA)), ":")[-center])
+    colnames(MSA) <- 1:ncol(MSA)
+    return(MSA)
+}
+```
+
+2.1 a<br>
+<span style="color:blue"> The first pair of pattern and subject is added to the multiple alignment matrix. Then, each subsequent pattern is compared to that first pattern. If the first has a gap the new pattern does not, a gap is added to the new subject accordingly and it is inserted into the matrix. If the new pattern has a gap the first pattern does not, the gap is added accordingly to all present sequences in the matrix to align with the new pattern, whose subject is then added as is. \span 
+
+2.1 b<br>
+<span style="color:blue"> The gap is added to all above sequences at the same position as in the new center sequence. The function does this by splitting the matrix at that column, and then recombining those two splits around a column of gaps. The sequence i is then added \span 
+
+2.2
+<span style="color:blue"> For each sequence, we don't need to compare it against itself. We also don't need to compare it with previous sequences, as those sequences have already been compared with this one in past iterations. Therefore, we must only align it with sequences it hasn't interacted with, or, those to the right of it in the vector. The for loop accomplishes this by, in the inner for loop, setting the start point to be the sequence after the sequence of interest. </span>
+
+```{r}
+sequences <- c("PVWHTAE", "HEVGAWGHEE", "PMCWGHVE") #these are the sequences that you should be working with.
+```
+
+2.3
+```{r}
+## Initialization
+n <- length(sequences)
+align1 <- matrix("", n, n)
+align2 <- align1
+
+## Generate alignments
+for(i in 1:(n-1)) {
+    for(j in (i+1):n) {
+        alignment <- pairAlign(sequences[i], sequences[j], "BLOSUM62", gapOpening=-6, gapExtension=-3)
+        align1[j, i] <- alignment[[1]]
+        align2[i, j] <- alignment[[1]]
+        align2[j, i] <- alignment[[2]]
+        align1[i, j] <- alignment[[2]]
+    }
+}
+
+align1
+align2
+```
+
+2.4
+```{r}
+distances <- sapply(mapply(`!=`, strsplit(align1, ""), strsplit(align2, "")), sum)
+distanceMatrix <- matrix(distances, n, n)
+dimnames(distanceMatrix) = list(sequences, sequences)
+distanceMatrix
+```
+
+2.5<br>
+<span style="color:blue"> Each column, or row for that matter, corresponds to the distance between that sequence and all other sequences when aligned. Taking the sum of the column or row gives a number describing how well or poor the sequence aligns with all other sequences. Therefore, the sequence with the smallest total distance best aligns with all others and should be used as the center. </span>
+
+2.6
+```{r}
+names(which.min(colSums(distanceMatrix)))[1]
+```
+

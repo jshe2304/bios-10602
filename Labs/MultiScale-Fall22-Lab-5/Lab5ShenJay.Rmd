@@ -1,0 +1,152 @@
+## Lab5 Answers File
+---
+Please write your answers into the space below the questions. Knit this file when you are done to check that all code runs. Remember to rename the file to contain *your actual* Last and First name.
+---
+
+RUN PREREQUISITE CODE CHUNK BELOW. THIS WILL INITIALIZE `Ebola_seq` FOR YOU.
+```{r, include=FALSE}
+library(seqinr)
+Ebola_seq <- read.fasta("Ebola.fasta")[[1]]
+```
+
+1.1 <br>
+<span style="color:blue"> Use local pairwise alignment, as the shared domain has been integrated with non-homologous domains in each lineage, and so only a subset of each sequence will be similar.  \span
+
+1.2 a <br>
+<span style="color:blue"> 21 \span
+
+1.2 b <br>
+<span style="color:blue"> 18 \span
+
+1.2 c <br>
+<span style="color:blue"> 14 \span
+
+1.3 <br>
+```{r}
+x <- strsplit("GATCCA", "")[[1]]
+y <- strsplit("GATTACA", "")[[1]]
+```
+<span style="color:blue"> Splits a string into a vector of characters. The delimiter is given by the second parameter, which tells the function what to split the string using. In this case, it splits by an empty space, which means between every character. \span
+
+
+1.5
+```{r}
+#Helper function to generate a score matrix
+scoreMatrix <- function(mat, mis, gap) {
+  lut <- matrix(mis, 5, 5)
+  diag(lut) <- mat
+  dimnames(lut) <- list(c("A", "C", "G", "T", "-"), c("A", "C", "G", "T", "-"))
+  lut[, "-"] <- gap
+  lut["-", ] <- gap
+  
+  return(lut)
+}
+
+alignmentMatrix<-function(seq1,seq2, scoreMat){
+  amatrix<- matrix(0, ncol=length(seq1)+1, nrow=length(seq2)+1)
+  rownames(amatrix) <-c("", seq2)
+  colnames(amatrix) <-c("", seq1)
+  
+  gapDec <- scoreMat["-", ][[1]]
+  
+  amatrix[1, ] <- seq(from=0, by=gapDec, length.out=length(seq1)+1)
+  amatrix[, 1] <- seq(from=0, by=gapDec, length.out=length(seq2)+1)
+  
+  for(i in 2:nrow(amatrix)) {
+    for(j in 2:ncol(amatrix)) {
+        l = amatrix[i-1, j] + gapDec
+        t = amatrix[i, j-1] + gapDec
+        lt = amatrix[i-1, j-1] + scoreMat[rownames(amatrix)[i], colnames(amatrix)[j]]
+        amatrix[i, j] <- max(l, t, lt)
+    }
+  }
+  return(amatrix)
+}
+```
+
+
+1.6
+```{r}
+x <- strsplit("GATATTACCA", "")[[1]]
+y <- strsplit("GATTTACTCA", "")[[1]]
+
+alignmentMatrix(x, y, scoreMatrix(mat=4, mis=1, gap=-3))[length(x)+1, length(y)+1]
+
+```
+<span style="color:blue"> 30 \span
+
+1.7 <br>
+<span style="color:blue"> 
+GATTACA
+GATC_CA
+
+GATTACA
+GA_TCCA
+
+GATTACA
+GAT_CCA
+\span
+
+1.8
+```{r}
+x <- strsplit("CGTACT", "")[[1]]
+y <- strsplit("GACTTAC", "")[[1]]
+
+alignmentMatrix(x, y, scoreMatrix(mat=4, mis=1, gap=-3))#[length(x)+1, length(y)+1]
+```
+<span style="color:blue"> 
+They match.
+
+__CGTACT
+GACTTAC_ \span
+
+```{r,echo=FALSE}
+suppressMessages(library("Biostrings"))
+
+source("pairAlign_cpp.R")
+```
+
+
+1.9
+```{r}
+sub <- nucleotideSubstitutionMatrix(match = 2, mismatch = -1, baseOnly = TRUE)
+pairAlign("GATTACACCTAGGTACT", "GATCCAACGTCCAA", substitutionMatrix = "sub", gapExtension = -2, type = "global")
+```
+
+1.10 <br>
+```{r}
+sub <- nucleotideSubstitutionMatrix(match = 4, mismatch = -2, baseOnly = TRUE)
+pairAlign("GATTACACCTAGGTACT", "GATCCAACGTCCAA", substitutionMatrix = "sub", gapExtension = -3, type = "global")
+```
+
+1.11 <br>
+<span style="color:blue"> The two results produced the same alignments, but with different final scores. This makes sense, as the run which rewarded matches more had a larger final score and vice versa for the other run.  \span
+
+1.12 <br>
+<span style="color:blue"> One gap corresponds to one mutation event. A large gap still typically corresponds to one mutation event. One mutation event is not as significant as multiple, which can be infered from many gaps. \span
+
+1.13 <br>
+```{r}
+pairAlign("MVWHDVD", "HDVGVWGHDD", substitutionMatrix = "BLOSUM62", gapOpening=0, gapExtension = 0, type = "global")
+pairAlign("MVWHDVD", "HDVGVWGHDD", substitutionMatrix = "BLOSUM62", gapOpening=0, gapExtension = -3, type = "global")
+pairAlign("MVWHDVD", "HDVGVWGHDD", substitutionMatrix = "BLOSUM62", gapOpening=-6, gapExtension = -1, type = "global")
+```
+<span style="color:blue"> The results of the first two lines returned alignments with more gaps than the third line. This is because the third line harshly punished gaps, and so gaps were minimized.  \span
+
+2.1
+```{r}
+count(Ebola_seq, 2)
+```
+
+2.2
+```{r}
+count1 <- count(Ebola_seq, 1)
+count2 <- count(Ebola_seq, 2)
+
+fc <- count1['c']/length(Ebola_seq)
+ft <- count1['t']/length(Ebola_seq)
+fct <- count2['ct']/(length(Ebola_seq)/2)
+
+fct/(fc*ft)
+```
+<span style="color:blue"> The word "CT" is more common in the Ebola genome than expected. \span

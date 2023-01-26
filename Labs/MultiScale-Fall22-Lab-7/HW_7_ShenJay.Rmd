@@ -1,0 +1,38 @@
+## Lab Homework
+
+### Working with results from Midway
+
+<span style="color:green">1. Use `scp` to retrieve Homo_sapiens_Chr3_ORFs_forward.csv and Homo_sapiens_Chr3_ORFs_reverse.csv from Midway. Provide the command you used below. \span
+
+<div style="color:blue"> 
+scp jshe@midway3.rcc.uchicago.edu:~/Lab7/Homo_sapiens_Chr3_ORFs_forward.csv ~/School/BIOS\ 10602/Labs/MultiScale-Fall22-Lab-7
+
+scp jshe@midway3.rcc.uchicago.edu:~/Lab7/Homo_sapiens_Chr3_ORFs_reverse.csv ~/School/BIOS\ 10602/Labs/MultiScale-Fall22-Lab-7 \div
+
+<span style="color:green">2. Load the tables into R using `read.csv()` and examine the structure of the data by printing out the first few lines with `head()`.\span
+
+```{r}
+forward <- read.csv("Homo_sapiens_Chr3_ORFs_forward.csv")
+reverse <- read.csv("Homo_sapiens_Chr3_ORFs_reverse.csv")
+
+head(forward, 5)
+head(reverse, 5)
+
+length(forward[["Length"]][forward[["Length"]]/3 >= 125])
+length(reverse[["Length"]][reverse[["Length"]]/3 >= 125])
+```
+
+<span style="color:green">3. How many ORFs with a length of at least 125 amino acid residues were detected in the forward and reverse directions of Chromosome 3 of the Homo sapiens genome? (Hint: the Length column is in nucleotides)</span>
+
+<span style="color:blue"> 6463 ORFs in forward direction. 2421 ORFs in reverse direction </span>
+
+<span style="color:green">4. Chromosome 3 of the Homo sapiens reference genome is currently known to contain about 1000 genes that code for about 4000 proteins. </span>
+<br>
+<span style="color:green">a) Why might the number of ORFs you obtained and genes be different? Propose two possible reasons for any discrepancy. </span>
+<br>
+<span style="color:blue"> One gene may be made up of multiple ORFs. Some ORFs are not fully translated and transcribed so as to be expressed as a gene.  </span>
+<br>
+
+<span style="color:green">b) How can more than one protein be encoded by any given gene? </span>
+<br>
+<span style="color:blue"> Each gene can be split up and reorganized during transcription, producing different RNA that produce different proteins when translated. </span>

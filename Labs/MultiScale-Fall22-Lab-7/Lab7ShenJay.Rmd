@@ -1,0 +1,301 @@
+---
+title: "Lab 7 Answers"
+output: html_document
+date: "2022-11-06"
+---
+
+## Part 0: Center Star Continued
+
+<span style="color:green"> 0.1 For each alignment against the center sequence, retrieve the list of patterns and the list of subjects. Use this data along with the index of the center sequence to run `buildMSA()` on the sequences in `sequences`. \span  
+
+```{r}
+source("pairAlign.R")
+
+buildMSA <- function(patterns, subjects, center) {
+    MSA <- rbind(patterns[[1]], subjects[[1]])
+    for(i in 2:length(patterns)) {
+        j = 1 #index in new row
+        k = 1 #index in alignment of center sequence to sequence i
+        m = 1 #column index of MSA
+        maxLength = ncol(MSA) + length(patterns[[i]])
+        newRow = character(maxLength)
+        while(k <= length(patterns[[i]]) && m <= ncol(MSA)) {
+            if(patterns[[i]][k] == MSA[1, m]) {
+                newRow[j] <- subjects[[i]][k]
+                j <- j + 1
+                k <- k + 1
+                m <- m + 1
+            } else if(MSA[1, m] == "-") {
+                newRow[j] <- "-"
+                j <- j + 1
+                m <- m + 1
+            } else if(patterns[[i]][k] == "-") {
+                if(m == 1) {
+                    MSA <- cbind(rep("-", nrow(MSA)), MSA)
+                } else {
+                    MSA <- cbind(MSA[, 1:(m-1)], rep("-", nrow(MSA)), MSA[, m:ncol(MSA)])
+                }
+                newRow[j] <- subjects[[i]][k]
+                m <- m + 1
+                j <- j + 1
+                k <- k + 1
+            }
+        }
+        while(k <= length(patterns[[i]])) {
+            MSA <- cbind(MSA, rep("-", nrow(MSA)))
+            newRow[j] <- subjects[[i]][k]
+            k <- k + 1
+            j <- j + 1
+        }
+        while(m <= ncol(MSA)) {
+            newRow[j] <- "-"
+            m <- m + 1
+            j <- j + 1
+        }
+        newRow <- newRow[1:(m - 1)]
+        MSA <- rbind(MSA, newRow)
+    }
+    rownames(MSA) <- c("    Center:", paste0("Sequence ", 1:(nrow(MSA)), ":")[-center])
+    colnames(MSA) <- 1:ncol(MSA)
+    return(MSA)
+}
+
+sequences <- c("PVWHTAE", "HEVGAWGHEE", "PMCWGHVE")
+
+n <- length(sequences)
+align1 <- matrix("", n, n)
+align2 <- align1
+
+## Generate alignments
+for(i in 1:(n-1)) {
+    for(j in (i+1):n) {
+        alignment <- pairAlign(sequences[i], sequences[j], "BLOSUM62", gapOpening=-6, gapExtension=-3)
+        align1[j, i] <- alignment[[1]]
+        align2[i, j] <- alignment[[1]]
+        align2[j, i] <- alignment[[2]]
+        align1[i, j] <- alignment[[2]]
+    }
+}
+
+distances <- sapply(mapply(`!=`, strsplit(align1, ""), strsplit(align2, "")), sum)
+distanceMatrix <- matrix(distances, n, n)
+
+centerCol <- which.min(colSums(distanceMatrix))
+
+patterns <- strsplit(c(head(align1[, centerCol], centerCol-1), tail(align1[, centerCol], -centerCol)), "")
+subjects <- strsplit(c(head(align2[, centerCol], centerCol-1), tail(align2[, centerCol], -centerCol)), "")
+
+buildMSA(patterns, subjects, centerCol)
+
+```
+
+<span style="color:green"> 0.2 Let's put everything together. Write a function `centerStar()` that takes in a list of sequences and uses `buildMSA()` to output the multiple sequence alignment. Test this function on the globin protein sequences contained in globins.fasta  that have been loaded into R for you as `globins` as a vector of concatenated uppercase strings. Again, use "BLOSUM62", gapOpening = -12, and gapExtension = -3. \span  
+
+```{r}
+globins <- unlist(seqinr::read.fasta("globins.fasta", seqtype = "AA", as.string = T))
+source("pairAlign.R")
+
+```
+
+
+```{r}
+centerStar <- function(sequences) {
+    for(i in 1:(n-1)) {
+        for(j in (i+1):n) {
+            alignment <- pairAlign(sequences[i], sequences[j], "BLOSUM62", gapOpening=-12, gapExtension=-3)
+            align1[j, i] <- alignment[[1]]
+            align2[i, j] <- alignment[[1]]
+            align2[j, i] <- alignment[[2]]
+            align1[i, j] <- alignment[[2]]
+        }
+    }
+
+    distances <- sapply(mapply(`!=`, strsplit(align1, ""), strsplit(align2, "")), sum)
+    distanceMatrix <- matrix(distances, n, n)
+
+    centerCol <- which.min(colSums(distanceMatrix))
+  
+    patterns <- strsplit(c(head(align1[, centerCol], centerCol-1), tail(align1[, centerCol], -centerCol)), "")
+    subjects <- strsplit(c(head(align2[, centerCol], centerCol-1), tail(align2[, centerCol], -centerCol)), "")
+
+    buildMSA(patterns, subjects, centerCol)
+}
+
+centerStar(globins)
+```
+
+
+## Part 1: Command-line operations in Unix
+<span style="color:green"> 1.1 What is the path to your "Desktop" directory (Hint: navigate to your "Desktop" folder using the "cd" (change directory) command and then type "pwd" in your terminal window)? \span
+
+<span style="color:blue"> /Users/jshe/Desktop \span
+
+<span style="color:green"> 1.2 What would be the relative path to HideFiles.sh be if our present working directory was the 'Users' directory? What would the relative path to HideFiles.sh be if we were currently in the 'funstuff' folder? \span  
+
+<span style="color:blue"> ../scripts/2/HideFiles.sh
+./HideFiles.sh\span
+
+
+<span style="color:green"> 1.3 What are the two periods '..' referencing? (Hint: if one '.' points back to your current directory then then two '..' would point back to where?) \span 
+
+<span style="color:blue"> The parent directory \span
+
+<span style="color:green"> 1.4 Navigate to your home directory. Now construct a command with 'cd' that takes you to your root directory from your home directory. Paste your command into your lab answer sheet document. \span  
+
+<span style="color:blue"> cd ../.. \span
+
+<span style="color:green"> 1.5 Using the manual and simply testing commands in your home directory, explain what happens with the following commands, in which additional **options** are passed to *ls* with the '-' character. Note, something like 'ls -lS' is equivalent to 'ls -l -S". (If you are using Windows Powershell and these commands aren't working, ask your TA for help!) \span  
+
+<span style="color:green"> *ls -l*  (that is the letter L, not the number 1) \span
+
+<span style="color:blue"> list in long format \span
+
+<span style="color:green"> *ls -i*  \span  
+
+<span style="color:blue"> shows the file's serial number \span
+
+<span style="color:green"> *ls -m*  \span 
+
+<span style="color:blue"> Formats the files on a single line separated by a comma \span
+
+<span style="color:green"> *ls -lS*  \span 
+
+<span style="color:blue"> lists in long format and also sorts by file size, then lexicographical order \span
+
+<span style="color:green"> *ls -lrth*  \span
+
+<span style="color:blue"> lists in long format, sorts by ascending time modified due to r argument, states file size in terms of unit suffixes \span
+
+<span style="color:green"> 1.6 What happens when you try 'ls Da*' from your home directory? Explain your answer. \span 
+
+<span style="color:blue"> It states there is no such file or directory that starts with Da \span
+
+<span style="color:green"> 1.7 What are the subdirectories that are in the newly created 'pcfb' folder? Which is the largest size file in the 'examples' subdirectory? (Hint: if you are unsure about how to check the file size, refer to the commands in Q1.5)\span 
+
+<span style="color:blue"> examples, sandbox, scripts. structure_1xmz.pdb is the largest file at 734 kilobytes \span
+
+<span style="color:green"> 1.8 Construct a command to **copy** the file structure_1sl8.pdb from examples to pcfb. Then construct a command to **move** the newly duplicated file from pcfb to the sandbox folder. Paste both commands in your answers file. \span  
+
+<span style="color:blue"> 
+
+cp ../examples/structure_1sl8.pdb ../
+mv ../structure_1sl8.pdb ./
+
+\span
+
+<span style="color:green"> 1.9 What protein is represented in this PDB file, and from what organism? How many atoms are present in the protein structure? \span 
+
+<span style="color:blue"> Calcium-loaded apo-aequorin, a luminescence protein, from Aequorea Victoria, a jellyfish \span
+
+<span style="color:green"> 1.10 What permissions are initially present on myScript.sh? \span 
+
+<span style="color:blue"> Read, Write \span
+
+## Part 2: Working on Midway
+
+<span style="color:green"> 2.1 In your Midway home directory, create a new subdirectory entitled 'Lab7' using the mkdir command. Navigate to this new folder, and determine its absolute path. Paste these commands below for this lab. \span
+
+<div style="color:blue">
+mkdir Lab7        
+cd Lab7       
+pwd    
+\div
+
+<span style="color:green"> 2.2 Use *scp* commands (either per file or one command with a wildcard) to upload the three files to your Lab7 directory on Midway, and paste these commands in your lab document. Return to your secure shell tab, and observe that three files are now present in the Lab7 directory. For Windows users, you can use WinSCP to transfer the files, but you still need to provide the commands that you'll theoretically use.\span 
+
+<span style="color:blue"> scp /Users/jshe/School/BIOS\ 10602/Labs/MultiScale-Fall22-Lab-7/Upload/* jshe@midway3.rcc.uchicago.edu:~/Lab7 \span
+
+<span style="color:green"> 2.3 Instead of printing out the completed list of ORFs in R (which we would not be able to see easily from the command line), this script generates two .csv tables for ORFs in both the forward and reverse directions. What function in the Lab7source.R file is used to generate these outputs? \span
+
+<span style="color:blue"> ORFTable \span
+
+<span style="color:green"> 2.4 Briefly explain why you would log into dedicated login nodes and submit jobs to dedicated compute nodes, instead of doing both on the same node. (If you can't think of a reason, execute the command 'squeue' — This will show you the current queue (line of jobs) running or waiting to be executed on the compute nodes.) \span  
+
+<span style="color:blue"> There is a lot of computation to be done, and the system would be unusable if users had to wait for jobs to finish before using the system. It may also protect the system by separating the users from import computing clusters of the supercomputer.  \span
+
+span style="color:green"> 2.5 Change the following components of the job submit script:  \span  
+<span style="color:green"> a) The job name is set to "test", which is not terribly descriptive. Choose a better name for this job and change the `job-name` parameter accordingly. \span
+
+<span style="color:green"> b) The submit script currently requests one second of compute time. This is not quite enough time to complete the job. Change the `time` parameter to request **one hour** of compute time.  \span    <br>
+
+
+<span style="color:green"> c) The account parameter is currently blank. Enter our class account `bios10602` so the scheduler knows which account to pull the resource allocation from. *Copy and paste your code into your answer file. *\span
+
+<div style="color:blue"> 
+
+#!/bin/bash          
+#SBATCH --job-name=orf_finder           
+#SBATCH --time=01:00:00            
+#SBATCH --nodes=1             
+#SBATCH --account=bios10602            
+#SBATCH --mem-per-cpu=8192          
+# Load R             
+module load R         
+              
+Rinfile="./Lab7source.R"          
+# Run R               
+Rscript $Rinfile            
+
+\div
+
+<span style="color:blue"> Rscript $Rinfile \span
+
+## Part 3: More commands in Unix
+
+<span style="color:green"> 3.1 Navigate to the sandbox directory. Execute and compare what happens with the following two commands. What is each of the two commands doing? How are they different? What is the `>` symbol doing?  \span  
+
+<span style="color:green"> `cat ../examples/*.seq` \span  
+
+<span style="color:blue"> Prints out the contents of all files in the examples folder that end with .seq \span
+
+<span style="color:green"> `cat ../examples/*.seq > ./chaetognath.fasta` \span  
+
+<span style="color:blue"> Inserts the output from the above file into a new ./chaetognath.fasta file \span
+
+<span style="color:green"> 3.2 The file `examples/shaver_etal.csv` contains various measurements in a comma-delimited text file. These measurements were obtained from various field sites, including one called “Toolik Lake”. Construct a command with grep that extracts all data entries from “Toolik Lake” and saves the output in a file called `toolik.csv`. Paste the command below. \span 
+
+<span style="color:blue"> grep "Toolik Lake" examples/shaver_etal.csv > toolik.csv \span
+
+<span style="color:green"> 3.3 Construct a piping command that first searches `shaver_etal.csv` for all observations from July (use the “Jul” search query), and then pipes these results to a second `grep` search for “Toolik Lake”. Save the results as a file `toolik_Jul.csv`. Paste the command into your report. \span  
+
+<span style="color:blue"> grep  "Jul" examples/shaver_etal.csv | grep "Toolik Lake" > toolik_Jul.csv \span
+
+## Lab Homework
+
+### Working with results from Midway
+
+<span style="color:green">1. Use `scp` to retrieve Homo_sapiens_Chr3_ORFs_forward.csv and Homo_sapiens_Chr3_ORFs_reverse.csv from Midway. Provide the command you used below. \span
+
+<div style="color:blue"> 
+scp jshe@midway3.rcc.uchicago.edu:~/Lab7/Homo_sapiens_Chr3_ORFs_forward.csv ~/School/BIOS\ 10602/Labs/MultiScale-Fall22-Lab-7
+
+scp jshe@midway3.rcc.uchicago.edu:~/Lab7/Homo_sapiens_Chr3_ORFs_reverse.csv ~/School/BIOS\ 10602/Labs/MultiScale-Fall22-Lab-7 \div
+
+<span style="color:green">2. Load the tables into R using `read.csv()` and examine the structure of the data by printing out the first few lines with `head()`.\span
+
+```{r}
+forward <- read.csv("Homo_sapiens_Chr3_ORFs_forward.csv")
+reverse <- read.csv("Homo_sapiens_Chr3_ORFs_reverse.csv")
+
+head(forward, 5)
+head(reverse, 5)
+
+length(forward[["Length"]][forward[["Length"]]/3 >= 125])
+length(reverse[["Length"]][reverse[["Length"]]/3 >= 125])
+```
+
+<span style="color:green">3. How many ORFs with a length of at least 125 amino acid residues were detected in the forward and reverse directions of Chromosome 3 of the Homo sapiens genome? (Hint: the Length column is in nucleotides)</span>
+
+<span style="color:blue"> 6463 ORFs in forward direction. 2421 ORFs in reverse direction \span
+
+<span style="color:green">4. Chromosome 3 of the Homo sapiens reference genome is currently known to contain about 1000 genes that code for about 4000 proteins. 
+<br>
+a) Why might the number of ORFs you obtained and genes be different? Propose two possible reasons for any discrepancy. 
+<span style="color:blue"> One gene may be made up of multiple ORFs. Some ORFs are not fully translated and transcribed so as to be expressed as a gene.  \span
+<br>
+b) How can more than one protein be encoded by any given gene? </span>
+<span style="color:blue"> Each gene can be split up and reorganized during transcription, producing different RNA that produce different proteins when translated. \span
+
+
+
+

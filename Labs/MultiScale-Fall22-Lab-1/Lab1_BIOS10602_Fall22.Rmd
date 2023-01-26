@@ -1,0 +1,731 @@
+---
+title: 'Lab 1: An Introduction to Programming in R'
+author: "BIOS 10602 - Multiscale Modeling of Biological Systems"
+output: html_document
+---
+<span style="color:red"> **The lab report is due by 11:59 PM the day after your lab period.** The answers file contains a template for you to put your answers in. \span
+
+<span style="color:blue"> In all lab assignments submitted for this course, you will ultimately be submitting a knitted HTML file (**saved as Lab#LastnameFirstname.html**) that performs the desired calculations and addresses the given tasks. Please write all answers in the provided "Lab 1 Answer Sheet" RMD file. It is best practice to provide comments in your code chunks that explain what your code does, especially for convoluted code chunks or for complex functions. If a comment is long, add a line break and # out a new line to improve readability. Be sure to periodically save the RMD file as you work on the tasks to avoid losing your work. Turn in your **knitted HTML** to your TA **via the `Lab 1` assignment** on Canvas by 11:59 pm CST the day **after** your lab. There will be a 20% penalty for each day the assignment is late, and no lab will be accepted after 3 days.</span>
+
+<span style="color:purple">
+**Lab goals:** <br>
+**1. Learn how variables, vectors, if statements, loops, and functions can be used to accomplish certain programming tasks in R. The features we will be covering today are the most basic tools for performing any type of computational task.** <br>
+**2. Get familiar with working in R Markdown. R Markdown makes it easy to embed code within a readable and presentable file. Labs for this class will typically be completed in R Markdown. **
+</span>
+
+If you are reading this in RStudio, then please click on Knit HTML, a key in the toolbar of this specific window (not the top window). An HTML file should open. This is almost always the easiest way to read an R Markdown file, such as this lab. If you are already familiar with R Markdown, then you may read the code directly. Otherwise, we recommend you read the knitted HTML, since this lab is designed to be read as such.
+
+R is a freely available programming language commonly used in statistics and bioinformatics. You can download the R software package [here](https://cran.r-project.org/) for Windows, Mac OSX, or Linux. R should already be installed on your laboratory computer, but you should install it on your own machine as well. As an interface for R, we will be using RStudio (http://www.rstudio.com/ide/), which provides an interactive development environment (IDE) with many features that are helpful to beginner and advanced programmers alike.
+
+R is a very practical introductory language with tremendous community support and plenty of helpful resources. Remember that if you're having trouble or want more details, your TA is here to help, and—most importantly—Google is your friend! One of the most important skills in programming is taking advantage of online resources to explore your computational questions.
+
+Useful resources (among many):  
+[A (very) short introduction to R](https://cran.r-project.org/doc/contrib/Torfs+Brauer-Short-R-Intro.pdf)  
+[Standard R Introduction](https://cran.r-project.org/doc/manuals/r-release/R-intro.pdf)  
+[Google Developers Intro to R playlist](http://www.youtube.com/playlist?list=PLOU2XLYxmsIK9qQfztXeybpHvru-TrqAP)  
+[R-help listserv archive](https://stat.ethz.ch/pipermail/r-help/)  
+[StackOverflow](http://stackoverflow.com/)  
+
+
+## Part 1: R as a Calculator
+
+After you have opened RStudio, you should be presented with a screen that looks something like the following:  
+
+![](./Images/img1.png)
+
+On the lower left-hand side you should see the **R Console Window**. Ignore the other windows for the time being. The console is where you can actually type commands in R that will be interpreted and executed. (You type at the **command prompt**, after the `>`). Let's try out some basic features of R. Try typing **5 + 3** and then pressing **enter** in the R console. You should see output something like the following:  
+
+```{r}
+5+3
+```
+
+R can be used a calculator just like this for all basic arithmetic operators. Look over the folowing demonstrations:  
+
+Addition: x + y  
+Example:  
+```{r}
+1+4
+```
+
+Subtraction: x - y  
+Example:  
+```{r}
+4-5
+```
+
+Multiplication: x*y  
+Example:  
+```{r}
+7*3
+```
+
+Division: x/y  
+Example:
+
+```{r}
+4/3
+```
+
+Exponentiation: x^y  
+Example:
+```{r}
+2^3
+```
+
+Modular Division: x %% y (meaning: *"what is the remainder when x is divided by y?"*)  
+Example:
+```{r}
+11 %% 2
+```
+
+Integer Division: x %/% y (meaning: *"what is the value of x divided by y rounded down to the nearest integer?"*) \
+Example:
+```{r}
+11 %/% 2
+```
+
+It is often most convenient to deal with large numbers in scientific notation (something like $1.4\times10^9$). In R, you can represent this value as either **1.4e9** or **1.4e+09**. 
+
+## Part 2: Scripts
+
+This interactive command prompt is a great place to test out R commands or run quick calculations. However, it would be very inconvenient if you had to type the same series of steps every single time you wanted to run something in R, especially if you wanted to repeat this process many times. Most actual programming in R is done with **scripts**, where a series of steps can be written once and then executed again and again. Scripts are a crucial part of computation, helping ensure reproducibility and documentation of bioinformatics experiments.
+
+To open a new script in RStudio, click the **green and white document icon** at the top left of the RStudio window. From the drop down menu select **R Script**. An untitled text document should appear at the top left of your RStudio window right above the R console.
+In this document you can type any command that works in R. Each command must be placed at the beginning of a new line. A long command can spill over onto multiple lines to improve readability, although you must use techniques to ensure that R knows that the command is incomplete after each of the preliminary lines (we'll see more of this later). Using RStudio, you can run either selected portions of your script or the entire document. To run a selected portion of your script, highlight the lines of interest and click **Run** (or <kbd>Command</kbd>+<kbd>Enter</kbd> for Mac, <kbd>Ctrl</kbd>+<kbd>Enter</kbd> for Windows). To execute the entire script, click **Source**. When working with R in scripts, you should use RStudio's scripting window as a workspace, and execute the commands using **Run** and **Source**.
+
+The last important feature of scripting is the **commenting out** indicator: the **#** sign. Any characters typed between a **#** symbol and a line break are ignored by R when a script is executed. As such, frequent and liberal use of **#** comments is a useful way to annotate a script. This is important so that somebody else (including yourself months down the line) can open up a script and understand precisely what each portion of the code is doing. It is also good practice to start a new R script with a commented out section in which you identify yourself and the date, and write a brief summary of the code that follows (this can be added at the end of an assignment when you know what you've actually done, but it should always be there before a script is closed):
+
+```{r}
+#Fall 2020
+#BIOS 10602 Lab1
+#An intro to programming in R
+#calculations in R; variables; logical expressions; control flow;
+
+#Task 1.1: find the value of 
+print("enter expression here")
+```
+
+## Part 3: R Markdown
+
+<span style="color:red"> Graded questions will always be written in <span style="color:green">green</span>. You are expected to provide both sufficiently annotated code and/or fully-fledged text answers to all such questions in the provided "Lab 1 Answer Sheet" file. Text answers ought to be provided in the form of <span style="color:blue">blue text</span>, and code solutions should be written as
+```{r eval = FALSE}
+code chunks #with comments when necessary
+```
+
+This and all future labs will be completed in R Markdown. R Markdown is one of the types of R files that RStudio can produce. In an R Markdown file you can typeset, format, and embed code directly into an easily readable and presentable file.
+
+<span style="color:purple"> For this section, please refer directly to the RMD file to see the formatting syntax that will be presented. </span>
+
+R Markdown is exportable/knittable to several file types, including both PDF and HTML. This lab is set up to be knitted to an HTML file, which you can discern by reviewing the header of this RMD file.   
+
+In R Markdown, you can write free text by simply writing in white space. Line breaks will be introduced automatically in both the RMD and HTML files. Paragraph breaks, on the other hand, require special formatting to appear. In order to tell R Markdown to introduce a paragraph break, you must end the previous paragraph with a double space. For ease of grading, we ask that you provide answers in blue. To do so, write your answer like this: 
+
+<span style="color:blue"> Your answer here. </span>
+
+This syntax comes from HTML, and you can use any HTML command in this R Markdown file. To make text **bold**, delimit it in double asterisks, and to make it in *italics*, delimit it in a single asterisk. You can also write mathematical expressions using LaTeX in R Markdown, by delimiting the LaTeX expression in `$` (e.g., $\pi r^2$).
+
+Most of your labs will ask you to write R scripts or R code. To directly embed those in the lab, you can introduce an R code chunk by delimiting the R code with triple grave accents (the key next to 1 on your keyboard) followed by `{r}`
+and then close the code chunk with triple grave accents again, as seen below. Alternatively, you can use the button in the toolbar (green square button with a c inside of it and an orange arrow to the left) from the toolbar above to insert a code chunk. The keyboard shortcut for this is <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>I</kbd> for Windows or <kbd>option</kbd>+<kbd>Command</kbd>+<kbd>I</kbd> for Mac.
+
+```{r}
+#This is a code chunk
+```
+
+This creates a line break and then introduces a gray code chunk, whose computations will be performed once you knit the .Rmd file. The results will be shown in a white box right below it. Sometimes, when you are making plots, you might want to hide the code chunk and only show the plot. To do this, use the echo parameter, as seen below (don't worry about how to plot, as it will be taught at a later time. If you are curious, you can always check the documentation for the function plot in the help tab on the bottom right corner).
+
+```{r, echo=FALSE}
+plotx <- 1:10
+ploty <- plotx*plotx
+plot(plotx,ploty, type = "l", main = "Squares", xlab = "x", ylab = "x^2")
+```
+
+You can also insert in-line R code in R Markdown files. This is especially useful if you need to report some quantity in your text. For example, "The date and time right now is `r date()`". When the file is knitted, the expression delimited by ` will be substituted by what it evaluates to in R. You can run code chunks or individual lines of code using the different options contained in the dropdown menu next to the **"Run"** button on the toolbar on top of this window. By default, the button runs the selected line or highlighted lines. Code can also be tested by copying and pasting into the console below. Of course, you can also just knit the entire file.
+
+You can find a very convenient cheat sheet for R markdown online at: https://www.rstudio.com/wp-content/uploads/2015/02/rmarkdown-cheatsheet.pdf. Another good reference is the [Github Markdown Cheatsheet](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet). And again,
+don't forget that internet and your TA can help you if you are having any trouble.
+
+<span style="color:green"> 3.1  Using scientific notation, multiply pi by 3.22 million </span>
+
+<span style="color:green"> 3.2  Write a single line of code that will compute the **remainder** of pi divided by 1.2. (Hint: R has a built in value for pi, called simply `pi`) </span>
+
+
+## Part 4: Variable Assignment
+R has 6 atomic classes. Essentially, there are 6 different types of data that can be stored in R. We will not cover the *raw* class in this course. The remaining five classes are the following:
+
+* *character* - Consists of any symbols you can find on your keyboard and is delimited by quotation marks. Any word in the dictionary, for example, would typically be saved as character-class data (e.g., "apple"). Note that the character class can hold more than one literal character of text; in this way, it is akin to the datatype often known as string in other languages (do not worry if you are not familiar with this concept).
+
+* *numeric* - Most numbers that you work with in R will be members of the numeric class. This class is essentially the R equivalent of double or float, and is associated with values like 3.97 and -2.4. By default, even whole numbers like "4" will be evaluated with double precision and treated like "4.0". Note as well that Inf and -Inf are special numbers in R, where Inf is a number that is bigger than any other number, and -Inf is its negative. Lastly, NaN (meaning <u>N</u>ot <u>a</u> <u>N</u>umber) covers undefined "numbers" that result from calculations such as 0/0. 
+
+* *integer* - To force a number / numeric type to be stored as an integer (instead of with double precision as above), append an L to the end of the number, like "4L". In R, 4L is an integer corresponding to 4 exactly. Arithmetic operators coerce integer arguments to numeric type.
+
+* *complex* - Complex is the class of complex numbers, meaning numbers with both real and imaginary components. One example of a complex number in R is 1+2i.
+
+* *logical* - There are only two logical values in R, namely TRUE (or T) and FALSE (or F). Please note that these expressions are case-sensitive in R, and must be written with the exact capitalization shown here.
+
+Missing values are represented in R by NA (`?NA` for more details).
+
+Variables in R are used to store and access numbers, strings of letters, data tables, or other objects for later use and manipulation. Creating and accessing values in variables is a task that is at the very heart of any programming project. In R, to create a variable, you must first assign some value to the variable. The command in R to do this is `<-`. This works by declaring the **Variable Name** on the **left** of the command, and the value to be stored on the **right** of the command. Think of it as an arrow pointing to the left.
+
+Let's try this in R now. To assign the value 5 to the variable *x*, you simply type the following into your command prompt, and hit **enter** (alternatively, you can do the same directly in R markdown by enclosing the code in an R code chunk):
+
+```{r}
+x <- 5
+```
+
+Now, if you type `x` into the command prompt after assigning the variable and hit **enter**, you should see the following output:
+
+```{r} 
+x
+```
+
+*Note that variable assignments are carried through different code chunks in the same R Markdown file. However, variables assigned in an R Markdown file **DO NOT** automatically carry over to your RStudio environment!*
+
+Now look at the top right section of RStudio under the Environment tab. As you can see, RStudio conveniently keeps track of the variables that are in our current workspace.
+
+![](./Images/img2.png)  
+  
+Also, if you click on the history tab, you can see that RStudio records each command that has been executed. These logging features can be incredibly helpful, especially when working on more complicated tasks. You can hit the **up arrow** key in the command prompt to bring up commands that you have previously entered.
+
+![](./Images/img3.png)
+
+Now try typing **y** into the R command prompt. You should see an output as follows:  
+
+```{}
+Error: object 'y' not found  
+```
+
+This means that the R session does not have any value attributed to the variable *y*. Variables can be assigned values using expressions or functions that reference other variables. For example, let's set *y* to be equal to three less the value of the variable *x* in our script:
+
+```{r}
+y <- 3 - x
+y
+```
+
+R can also handle recursions (meaning you can define a variable or function referencing itself), as the following example shows:
+
+```{r}
+z <- 1
+z
+```
+
+```{r}
+z <- z + 1
+z
+```
+
+```{r}
+z <- z + 1
+z
+```
+
+Notice that the assignment `z + 1 <- 2` (try it in the console) is not valid because "z+1" is not a valid variable name.  
+
+<span style="color:green"> 4.1 Reassign *x* to a different value, and see how this affects *y*.<br>
+a.) What is *y* actually storing: an expression or a value? <br>
+b.) What is the difference between a variable storing an expression and storing a value? </span>
+
+What if you want to store more than one value in a variable? There are a number of ways to do this. Variables in R can store data in several different structures, including the **vector**, which provides a simple way to store many elements in the same variable. To create our first vector, we just need to type and execute the following command.
+
+```{r}
+myVec <- c(2, 4, 6, 8, 10, 12, 14, 16, 18, 20)
+myVec
+```
+
+What we just did was using the `c()` function, which is short for "**c**ombine". All functions in R have associated Documentation pages, which are accessed by typing the following in the command prompt: `?function_name`. So, if you want to find out more about `c()`, you would type `?c` into the console. You should try this any time you need more information on a function, or if it is not behaving as you expect. We will cover functions more thoroughly later on.
+
+Alternatively, you can use the search bar in the help tab of the bottom-right window in RStudio.
+
+<span style="color:green"> 4.2	Explore the `c()` documentation page and the attributes of the newly-made `myVec`. Note that the *arguments* of a function are the data that you pass to that function when you call it (i.e. use it). With this in mind, describe what the function `c()` does.  </span>
+
+Many R operators work on whole vectors like the one we just created (this is to say that they are *vectorized*). For example:
+
+<span style="color:green"> 4.3  <br>
+a.) Use the addition operator `+` to add `myVec` and the number `4`. Save this in a new variable so that the original myVec remains the same. <br>
+b.) Describe the behavior of this operation. </span>
+
+<span style="color:green"> 4.4 Use the `mean()` function (run `?mean()` for documentation if needed) to calculate and report the average of the entries in *myVec*. </span>
+
+<span style="color:green"> 4.5 A normal resting heart rate for adults ranges from 60 to 100 beats per minute. <br>
+a) Create a vector `heartRate` that spans the range of normal resting heart rates in intervals of 5bpm (use the `c()` function, or check out `?seq()`, which will be seen in Part 5). <br>
+b) The average ejection volume for adult males is 70 mL/beat. Store this average ejection volume in a variable `averageEjection`. Using this data, create a vector `ejectionVolumes` containing the total amount of blood (in mL) ejected in *35 minutes* for each heart rate in your range (the `heartRate` vector you created in the previous part). </span>
+
+Note that a vector specified by `c()` can only hold one kind of atomic class. For instance,
+the vector c(1,"a", TRUE) would not be a valid vector in R, because it would hold numeric data, character data and logical data. You will see later that this also holds for matrices. Lists, on the other hand, are able to handle different classes in the same list.
+
+Let's examine the structure of our first vector `myVec`. If we look in the Environment window, we can see something similar to the following in the entry for `myVec`:
+
+```{r}
+str(myVec)
+```
+
+What this tells us is that `myVec` is a **numeric** vector whose indices span from **1:10** (more on this in a little bit) and whose values consist of the multiples of 10 from 10 through 100, inclusive. In terms of size, vectors in R are one-dimensional. This is to say that they have one "spatial" dimension of **length**, which can be accessed using the `length()` function. If we wanted to find the *length* of *myVec*, then we would execute the following command:
+
+```{r}
+length(myVec)
+```
+
+From this output, we can see that the vector `myVec` has 10 elements in it. From before, we know that these values are 10, 20, 30, 40, 50, 60, 70, 80, 90, and 100. Now, we can obviously address the whole vector by simply typing `myVec`, but what if we want to work with specific values from our vector or even a range of values?
+
+Once you have a vector defined, you can access individual elements of the vector as follows. **Note to those with exposure to other programming languages: index values in R start with 1 and not 0!** To obtain the first element in a vector, simply type the following:
+
+```{r}
+myVec[1]
+```
+
+This can be repeated for any value that you care about in the vector like the third value:
+```{r}
+myVec[3]
+```
+
+or the sixth value:
+```{r}
+myVec[6]
+```
+
+We have just executed our first **subsetting** or **indexing** operation. Subsetting is an operation in R that (as the name suggests) allows you to retrieve or address a *subset* of a given object's values. The values that you are addressing are determined according to that object's *indices*.
+
+The **indices** of an object are a set of numbers that describe the positions of data within the object. For every vector, the set of indices can be thought of as a numeric vector (of the same length as the vector in question) that begins at `1` and ends at `length(object)`. To use the integer sequence notation from before, a convenient way to refer to an vector's indices is then `1:length(object)`.
+
+<span style="color:green"> 4.6 What do the following indexing operations do? Explain each. <br>
+a.) `myVec[1] <- 3` <br>
+b.) `myVec[2:5]` <br>
+c.) `myVec[c(1,3,5,7)]` <br>
+d.) `myVec[-5]`  <br>
+e.) `3*myVec`
+
+## Part 5: Logical Expressions
+R, like other programming languages, is able to evaluate logical statements like the following:
+
+```{r}
+2 == 2
+```
+
+```{r}
+3 == 4
+```
+
+Here we are having R evaluate if the values on either side of the '==' operator are equal. Note that since many programming languages use '=' to assign a value to a variable, the '==' operator is used to assess equality.
+
+Similar to "==", there are other comparison operators such as
+
+```{r}
+2 != 2
+```
+
+```{r}
+4 >= 4
+```
+
+```{r}
+2 <= 4
+```
+
+```{r}
+4 < 4
+```
+
+```{r}
+3 > 4
+```
+
+<span style="color:green"> 5.1  Describe what comparison each of the operators `!=`, `==`, `<=`, `>=`,`<`, and `>` do. If it is not yet clear to you what some of them mean from the above examples, feel free to run more tests of your own in the RStudio console. </span>
+
+Some operators are slightly more complex. The AND operator `&&` evaluates two statements and determines whether those statements as a whole are TRUE or FALSE.
+```{r}
+x <- 4
+(x > 3) && (x < 5)
+```
+
+In this case, both logical statements (x > 3) and (x < 5) are true. Therefore, the overall expression returns TRUE.  
+
+If we were to say  
+
+```{r}
+x <- 4
+(x > 10) && (x < 5)
+```
+
+then R returns FALSE, since x, which has a value of 4, is not greater than 10. Note that the AND operator `&&` requires BOTH of its arguments to be true, so the fact that 4 < 5 is TRUE is overrided by the fact that 4 > 10 is FALSE.  
+
+However, if we change the `&&` operator to `||`, a double pipe, the expression will return TRUE. 
+```{r}
+(x > 10) || (x < 5)
+```
+
+Note that using parentheses with logical expressions often isn't necessary, but doing so can improve code readability and make the expression more transparent to programmers. Using parentheses might be necessary when writing logical expressions that combine `||` operators and `&&` operators.
+
+<span style="color:green"> 5.2 Play around with the values of x and the values in the logical statement, and try to explain in words how the `||` operator works. Under what conditions will it return TRUE? FALSE? How is it different than the `&&` operator? </span>
+
+You may have noticed that the `!` character in `!=` seems to change *equals* into *not equals*. This is because `!` is the **logical NOT operator**. Because truth values exist in a binary framework—there can be only TRUE or FALSE—think of `!` as a sort of "light switch operator" that allows you to alternate between the two. For example:
+
+```{r}
+!TRUE
+```
+
+```{r}
+!!TRUE
+```
+
+```{r}
+!FALSE
+```
+
+...and so on. Feel free as usual to play around with these operators in the console if you think you could use a better understanding. If you're still confused, don't forget to ask your TA for help!
+
+<span style="color:green"> 5.3 Fill in the following *truth table*. In order to record your answer, write a sequence of Ts and Fs **in your Lab 1 Answer Sheet RMD file** consistent with the numbering provided in the table. For example, if you think the cell containing "(1)" should be T and the cell containing "(2)" should be F, then your answer should be "T, F, ..." and so on. <br> </span>
+
+<!-- IGNORE BELOW; HTML TO GENERATE TABLE -->
+
+<style type="text/css">
+.tg  {border-collapse:collapse;border-spacing:0;}
+.tg td{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+  overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg th{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+  font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg .tg-baqh{text-align:center;vertical-align:top}
+.tg .tg-c3ow{border-color:inherit;text-align:center;vertical-align:top}
+</style>
+<table class="tg">
+<thead>
+  <tr>
+    <th class="tg-c3ow">P</th>
+    <th class="tg-c3ow">Q</th>
+    <th class="tg-c3ow">!P</th>
+    <th class="tg-c3ow">P &amp;&amp; Q</th>
+    <th class="tg-c3ow">P || Q</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td class="tg-c3ow">T</td>
+    <td class="tg-c3ow">T</td>
+    <td class="tg-c3ow">(1)</td>
+    <td class="tg-c3ow">(2)</td>
+    <td class="tg-c3ow">(3)</td>
+  </tr>
+  <tr>
+    <td class="tg-c3ow">T</td>
+    <td class="tg-c3ow">F</td>
+    <td class="tg-c3ow">(4)</td>
+    <td class="tg-c3ow">(5)</td>
+    <td class="tg-c3ow">(6)</td>
+  </tr>
+  <tr>
+    <td class="tg-c3ow">F</td>
+    <td class="tg-c3ow">T</td>
+    <td class="tg-c3ow">(7)</td>
+    <td class="tg-c3ow">(8)</td>
+    <td class="tg-c3ow">(9)</td>
+  </tr>
+  <tr>
+    <td class="tg-baqh">F</td>
+    <td class="tg-baqh">F</td>
+    <td class="tg-baqh">(10)</td>
+    <td class="tg-baqh">(11)</td>
+    <td class="tg-baqh">(12)</td>
+  </tr>
+</tbody>
+</table>
+<br>
+
+<!-- IGNORE ABOVE; HTML TO GENERATE TABLE -->
+
+Logical operators are also vectorized! Consider the following set of operations:
+
+```{r}
+multiplesOfFive <- seq(5, 50, 5) #create a vector of numbers *from* 5, *to* 50, in *steps* of 5
+multiplesOfFive
+notDivisibleByTen <- multiplesOfFive %% 10 != 0 # x %% y == 0 is asking "is x evenly divisible by y?"
+
+                                                # So x %% y != 0 is asking "is x NOT evenly divisible by y?"
+
+notDivisibleByTen
+```
+
+<span style="color:green"> 5.4 Explain the following operation in words: </span>
+
+```{r}
+multiplesOfFive[notDivisibleByTen]
+```
+
+<span style="color:green"> 5.5 Try summing logical values in the console (such as "TRUE + TRUE"). <br>
+a.) Explain how R handles such a query. <br> 
+b.) What are some benefits of R handling these types of expressions as it does? </span>
+
+## Part 6: Control Flow: if, else
+Logical expressions are an essential part of **control flow**. Control flow refers to programmatic decision-making that determines which statements will be executed, or how many times something should be executed. It seems complicated, but don't fret, control flow is not as daunting as it may appear.
+
+Frequently, a programmer wants a particular command to be executed only when a certain condition is met. For a real world example, think of   unmanned radar guns. They capture the speed of each passing car, but they only send a ticket to the owner if the speed limit is exceeded. In an R script, this conditional logic can be represented in the following code. 
+
+Note: this command is stretched over multiple lines and indented in order to improve transparency of the code; the lack of resolution of a parenthetical `()` or bracketed `{}` statement at the end of any given line means that R knows to search for the next line to resolve the entire command. Incorrect closure of a parenthetical or bracketed statement could lead you to execute a control flow statement prematurely—pay attention to this!  
+
+Also, **note that the closing bracket** `}` **for the "if" statement must lie on the same line as the following "else"**.
+
+<span style="color:green"> 6.1 Observe what happens when the following if/else statement is executed. Why do we get this behavior? (Hint: what do FALSE == 0 and TRUE == 1 return?) (Hint Hint: Is this consistent with your answer to question 5.5?) </span>
+```{r}
+if(0) {
+    print("a")
+} else {
+    print("b")
+}
+```
+
+Now we are ready to look at the much-anticipated "unmanned radar" example:
+
+```{r}
+carSpeed <- 65
+speedLimit <- 75
+if(carSpeed > speedLimit) { 
+    print("Give ticket") 
+} else { 
+    print("Do nothing") 
+} 
+```
+
+<span style="color:green"> 6.2	<br>
+a.) Explain how this segment of code operates. <br>
+b.) Change `carSpeed` to 90, and explain once again how flow is controlled. (Documentation on all control flow functionalities can be found with `?Control`). </span>  
+
+<span style="color:green"> 6.3 Assign a numeric value of your choice to a variable `bodyTemp`. Write an if, else statement that instructs patients to "seek medical attention" if their `bodyTemp` is above 37.2 degrees or below 36.5 degrees, or to "do nothing" if their temperature is within the otherwise acceptable range. </span>
+
+This final exercise may sound daunting, but once you get the idea you will have no problems at all! Feel free to search Google about nested if, else statements or ask your TA.
+
+<span style="color:green"> 6.4 Write a nested if, else statement (an if, else statement *within* an if, else statement) of your choice. (Note: double-check to make sure that you're not writing two separate if, else statements.) </span>
+
+## Part 7: Control Flow - Loops
+It's important to remember that computers are very good for automating tedious tasks. For example, say we wanted to multiply all of the numbers between 1 and 10 by 2. In R, we could do this by typing each command explicitly:
+```{r}
+1 * 2
+```
+```{r}
+2 * 2
+```
+```{r}
+3 * 2
+```
+...etc.
+
+However, this is an exhausting approach and is prone to human error. A more elegant solution is to use a **for loop**. A for loop iterates over a fixed set of values or elements. With each iteration, the tasks are performed. Ignore the syntax for the moment, and in your command prompt input the following.
+
+```{r eval = FALSE}
+for(i in 1:10) {
+    print(i*2)
+}
+```
+
+<span style="color:green"> 7.1 <br>
+a.) Explain what this loop is doing. <br>
+b.) How/when is `i` defined?<br>
+c.) Is it a global variable? (Hint: look at your environment) <br>
+d.) If you define a variable `i` outside the for loop prior to its execution, does it affect the calculation? </span>
+
+Multiple commands can be executed within each iteration of a for loop:
+```{r}
+for(i in 1:3) {
+  x <-  i + 10
+  y <- x * 2
+  z <- y^2    
+  print(z)
+}
+```
+
+Additionally, a loop can be nested within another one:
+```{r}
+for(i in 1:3) {
+  for(j in 1:3) {
+      print(j * i)
+  }
+}
+```
+
+
+<span style="color:green"> 7.2	Recall that the command `x %% y` gives you the value of x **mod** y, meaning the remainder that results from dividing x by y. <br>
+a.) How can you use this command to determine whether a number is even or odd? <br>
+b.) With this information in mind, write a for loop that iterates from 1 to 12, and have it print out the even numbers between 1 and 12 *as well as the lucky number 7 itself.* Note: These numbers *must* be printed in order and by using the for loop mechanism! </span>
+
+<span style="color:green"> 7.3 R has a built-in variable `letters`, which is a vector containing all letters of the alphabet in lower-case. Write a for loop to iterate through the vector `letters`, and then print each letter in upper-case using the `toupper()` function (type `?toupper()` in the console for documentation). </span>
+
+Another kind of loop is a while loop. A while loop keeps repeating some sequence of commands *while* some logical expression is true. The following gives an example of while loop.
+
+```{r}
+oranges <- 5
+while (oranges > 0) {
+    if (oranges > 1) {
+        print("Someone just bought one of my oranges!")
+        oranges <- oranges -1
+        print(paste("I still have ", oranges, "oranges to sell!"))
+    } else {
+        print("Someone just bought one of my oranges!")
+        oranges <- oranges -1
+        print("I don't have any oranges to sell, :(!")
+    }
+}
+```
+
+Consider the following while loop:
+
+```{r eval = FALSE}
+x <- -10
+while(x < 0) {
+    print(x)
+    x <- x - 1
+}
+```
+
+It has been set to not evaluate (`eval = FALSE`), because if it were to evaluate, then it would result in an infinite loop. Think about why this may be the case, and then answer the following two questions:
+
+<span style="color:green"> 7.4	<br>
+a.) Why would this loop continue to execute infinitely? <br>
+b.) Propose one change to this while loop that would fix the problem. </span>
+
+<span style="color:green"> 7.5 `while()` loops will iterate as long as the expression within parentheses evaluates to `TRUE`. <br>
+a.) What would happen if the code provided in your answer sheet were executed? Explain. <br>
+b.) Modify the code provided in your answer sheet so that it executes a functional while loop (that only prints a finite number of lines). Test it and make sure it terminates!  </span>
+
+## Part 8: Functions in R
+
+### Structure and definition
+Sometimes the task we want repeated occurs sporadically throughout our code. For these situations, a good solution is to write a function. **Functions are *reusable* chunks of code designed to do specific tasks.** In order to utilize a function, you call it by name and--when necessary--provide that function with arguments, which is the data that you pass to the function to work with. We've already encountered several built-in functions such as `c()`, `length()`, `toupper()`, etc. These functions take some data as their arguments, perform some operation(s) on those arguments, and *return* some result back to us. More on this later.
+
+For now, let's take a closer look at the workings of a function. In R, all functions very broadly follow the same basic architecture (pseudocode follows):
+
+```{r eval = FALSE}
+funcName <- function(argument1, argument2, ..., argumentN) {
+    ...operations performed on arguments to find output...
+    return(output)
+}
+```
+
+Let's break this down. A function definition is similar to the regular old assignment operation that we already know. First, we have our function name and the assignment operator `<-`. What we are assigning to this name, however, is not some data to create a variable but rather a *function*. We tell R that we want to write a function by typing `function()`. Very logical, sort of like when we created vectors with `c()`. 
+
+#### Arguments and parameters
+Next, we place in the parentheses a list of the variables that we want the function to have access to during the course of its execution. As we have mentioned before, the **data that you pass to a function when you call it** are known as the function's **arguments**. When you define **the number and nature of the arguments that the function will take**, you are setting that function's **parameters**. <span style="color:red"> So to summarize this, the **parameters of a function are set during the function definition, and they represent the arguments that the function will take**. These parameters stand in as "placeholders" for the arguments, which are provided to the function at the time of the function call.</span>
+
+#### Function body
+The next part of the function definition consists of the "stuff" that our function will actually do. This is the body of the function. It can be as simple or as complicated as your heart desires. In this section, we can perform operations on our arguments, assign new (local) variables, and--perhaps most importantly--**`return()`** what we want to output from the function.
+
+##### Return vs. print:
+The difference between `return()` and `print()` is that printing something ALWAYS prints to the console. Let's consider the examples `parrot()` and `mime()` defined below, which both take one argument called `x`:
+
+```{r}
+parrot <- function(x) {
+    print(x)
+}
+
+mime <- function(x) {
+    return(x)
+}
+```
+
+As we can see, the difference between these functions is that `parrot()` will **print** `x`, while `mime()` will **return** `x`. Let's examine the ramifications of this difference. In the following code chunk, we will simply *call* our functions with the number `5` as their argument.
+
+```{r}
+parrot(5)
+
+mime(5)
+```
+
+All seems well, and `5` is printed to the console in both cases. The difference makes itself apparent when we use our functions to assign a value to a variable, as follows:
+
+```{r}
+a <- parrot(5)
+b <- mime(5)
+```
+
+Both of our variables have successfully been assigned a value of 5, but only the `parrot()` call resulted in something being printed. The `mime()` call assigned the value silently. This is often the desired behavior.
+
+<span style="color:green">
+8.1 <br>
+a.) Write a new function `findCube(n)` that takes one argument (i.e., has one parameter `n`) and returns the cube of that argument. <br>
+b.) Call this function to calculate the cube of 529 and **silently** assign it to a variable `cubed`. Observe that the assignment will be silent so long as you used `return()` and not `print()` in the previous part. Moreover, you should see that the function can be called again from any code chunk without rewriting it! </span>
+
+Another important behavior of the `return()` statement is that **the function will terminate as soon as the first** `return()` **statement is executed.** Consider the example below:
+
+```{r}
+terminatePrematurely <- function(x) {
+    return("Oops!")
+    
+    ## Converts input from decimal to binary
+    n <- numeric(floor(log2(x)) + 1)
+    while(x > 1){
+        exp <- floor(log2(x))
+        n[exp + 1] <- 1
+        x <- x - 2^exp
+    }
+    n[1] <- x %% 2
+    return(paste0(rev(n), collapse = ""))
+}
+
+terminatePrematurely(1089410839856315)
+```
+
+If that first line were not present, then we would have gotten a binary representation of the number that we passed as the argument to `terminatePrematurely()`, but instead we got an unfortunate case of premature termination because ***functions can only return one thing***. 
+
+Functions are not limited to operations upon a single input number or variable. Instead, they can take multiple arguments, as in the following *multipleArgFunction()* example.
+
+```{r}
+multipleArgFunction <- function(x, y, z) {  
+    return(x * y  + z)
+}
+```
+
+<span style="color:green"> 8.2 Look at the following examples and observe what determines how inputs are assigned to `x`, `y`, and `z` in our `multipleArgFunction()`. What does this tell you about how inputs are allocated to functions with multiple arguments more generally?
+
+```{r}
+multipleArgFunction(3, 2, 1)  
+```
+
+```{r}
+multipleArgFunction(1, 2, 3)  
+```
+
+```{r}
+multipleArgFunction(z = 3, y = 2, x = 1)
+```
+
+<span style="color:purple"> As an aside: Functions do not necessarily require input arguments in order to work. For example, see the following function: </span>
+
+```{r}
+noInputFunc <- function() {
+	return("It works!")
+}
+noInputFunc()
+```
+
+Also, you can call previously defined functions inside future functions. For instance:
+
+```{r}
+getSquare <- function(x) {
+    return(x^2)
+}
+Raise4 <- function(x) {
+    return(getSquare(getSquare(x)))
+}
+```
+
+And see that
+
+```{r}
+3^4 == Raise4(3)
+```
+
+Throwing it back to you, the final two exercises of this lab are writing two new functions yourself! Your TA is happy to help you implement your code if you get stuck.
+
+<span style="color:green"> 8.3 <br>
+a.) Write a function "calcMean" that takes a vector of numbers as an argument and returns the mean of those numbers (Hint: see documentation for the `sum()` and `length()` commands). It goes without saying that you cannot use the built-in `mean()` function here. <br>
+b.) Execute that function on a vector containing values 3 through 14, inclusive. <br>
+c.) Check your answer using R's built-in function `mean()`. </span>
+
+<span style="color:green"> 8.4 <br>
+a.) Using a for loop, convert each pH from 1-14 into concentrations of H+. Store the list of [H+] in a vector. Remember that pH is equal to $-\log_{10}([\text{H+}])$. This equation can be rearranged to find [H+] as a function of pH. A brief explanation for pH and pOH can be found [here](https://www.khanacademy.org/science/chemistry/acids-and-bases-topic/acids-and-bases/a/ph-poh-and-the-ph-scale).The example below may help you. </span>
+
+To define an empty vector of length n and fill in values one at a time, see the following example of the `numeric()` function:
+```{r}
+myVec <- numeric(4)
+print(myVec)
+for(index in seq_along(myVec)) {
+    myVec[index] <- index^2
+}
+print(myVec)
+```
+<span style="color:green"> b.) Now write a **function** called H_from_pH that, given a pH value, outputs the concentration of H+. Also, write an analogous **function** OH_from_pH to get OH- concentration from the pH value. The relevant equations for the latter half of this part are that pOH equals 14-pH, and lastly that pOH equals $-\log_{10}([\text{OH}^-])$. </span>

@@ -1,0 +1,165 @@
+---
+title: "Lab 4 Answer Sheet"
+author: "BIOS 10602 - Multiscale Modeling of Biological Systems"
+date: "9/22/2021"
+output: html_document
+---
+
+## Part 1: Pasting strings, value matching, and break
+
+1.1
+```{r}
+paste("Today's date is ", format(Sys.Date(), format="%B %d"), ", ", format(Sys.Date(), format="%Y"),  ".", sep="")
+```
+
+1.2
+```{r}
+c <- 5:25
+d <- c(-2, 15, 8, 33, -8)
+
+c%in%d
+d%in%c
+```
+<span style="color:blue"> The first command checks if each element of c is in d or not. The output gives TRUE or FALSE for each value in c corresponding to whether or not that value is in d. The second command checks if each element of d in in c or not. The output gives TRUE or FALSE for each value in c corresponding to whether or not that value is in c. </span>
+
+1.3
+
+```{r}
+for(i in 1:100){
+  if(i==7){
+    break
+  }
+  print(i)
+}
+```
+<span style="color:blue"> The loop prints out all numbers from 1 to 6. If there were no if statement, it would print all numbers from 1 to 100, but the if statement stops the for loop when it reaches 7, therefore there are no further outputs after 6 since the print statement comes after the break descision. </span>
+
+## Part 2: Open reading frames
+2.1 a)<br>
+```{r}
+findStartCodons <- function(seq){
+  startcodons <- numeric(0)
+  k <- 1
+  
+  for(i in 1:(length(seq)-5)){
+    if (seq[i] == "a" && seq[i+1] == "t" && seq[i+2] == "g") {
+      startcodons[k] <- i
+      k <- k + 1
+    }
+  }
+  return(startcodons)
+}
+```
+
+2.1 b)<br>
+<span style="color:blue"> It does not make sense to check the last three bases for a start codon, because even if you did find a start codon there, it would be invalid because there won't be a stop codon, which needs at least 3 bases. The stop codon doesn't check the last two bases because there wouldn't be any room to fit the codon in two bases. Also, it does check the first three bases because there could be a stop codon there that is connected to a previous start codon. The bounds of iteration simply implement these observations. </span>
+
+2.1 c)<br>
+```{r}
+findStopCodons <- function(seq){
+  stopcodons <-numeric(0)
+  k <- 1
+  #TAG TAA TGA
+  for(i in 1:(length(seq)-2)){ 
+        if (seq[i] == "t") {
+          if ((seq[i+1] == "a" && (seq[i+2] == "g" || seq[i+2] == "a")) || (seq[i+1] == "g" && seq[i+2] == "a")) {
+            stopcodons[k] <- i
+            k <- k + 1
+          }
+        }
+  }
+  return(stopcodons)
+}
+```
+
+
+2.2
+```{r eval = TRUE}
+##Make sure to set eval to TRUE after finishing the function.
+
+findORF <- function(seq, minLength){
+  startcodon<- findStartCodons(seq)
+  stopcodon<- findStopCodons(seq)
+  usedStop<-numeric(0)
+  ORFs<-character(0)
+  k<-1
+  for (start in startcodon){
+    for(stop in stopcodon){
+      if ((stop > start) && ((stop - start) %% 3 == 0)) {
+        if (stop %in% usedStop || ((stop + 3) - start)/3 < minLength) {
+          break
+        }
+        ORFs[k] <- paste(start, "to", stop + 2)
+        usedStop[k] <- stop
+        k<- k + 1
+        break
+      }
+    }
+  }
+  ORFs <- ORFs[ORFs!=""]
+  return(ORFs)
+}
+```
+
+2.3
+```{r}
+library(seqinr)
+zika_seq <- read.fasta("Zika.fasta")[[1]]
+findORF(zika_seq, 200)
+```
+
+2.4<br>
+<span style="color:blue"> The algoritm I wrote only found one ORF which spans 10259 bases or 3420 codons. The ORF only codes for one polyprotein, which makes sense. 
+</span>
+
+
+2.5<br>
+```{r}
+covid_seq <- read.fasta("covid19.fasta")[[1]]
+findORF(covid_seq, 100)
+```
+
+
+2.6
+<span style="color:blue"> The algoritm I wrote found 8 ORFs. According to the provided paper, the COVID genomic sequence codes for 27 proteins. This is not surprising, since alternative splicing allows ORFs to adopt different orders when making RNA. Thus 8 ORFs can combine in different ways to form many different RNAs that produce the 27 proteins.  </span>
+
+2.7
+```{r}
+hiv_seq <- read.fasta("HIV.fasta")[[1]]
+findORF(hiv_seq, 50)
+```
+<span style="color:blue"> The HIV genome is known to contain nine genes, which matches the result from my algorithm, that encode fifteen viral proteins. It can do this via alternative splicing, in which the ORFs may be reordered to produce variant RNAs. </span>
+
+
+## Part 3: Further Open Reading Frame Analysis
+
+3.1<br>
+```{r}
+source("ORF.R")
+ecoli <- seqinr::read.fasta("E_coli.fasta")[[1]]
+E_coli_ORF <- findORF(ecoli, 200)
+```
+
+3.2
+```{r}
+ecoliByLength <- E_coli_ORF[order(E_coli_ORF$Length, decreasing = TRUE),]
+```
+
+
+3.3 a)
+```{r}
+head(ecoliByLength, 5)
+```
+
+3.3b<br>
+<span style="color:blue"> ATP-dependent helicase Lhr is a protein that is thought to function in DNA repair. It is observed to target DNA replication fork structures. </span>
+
+3.4 a)
+```{r}
+staph_seq <- read.fasta("Staphylococcus-sequence.fasta")[[1]]
+head(findORF(staph_seq, 200), 10)
+head(findORF(compStrand(staph_seq), 200), 10)
+```
+
+3.4 b) <br>
+<span style="color:blue"> The algorithm we used gave back 807 ORFs. The greater number of protein coding genes can be attributed to different frames the ORFs are read from. There is also the matter of the minimum ORF length we choose, which may alter the data. </span>

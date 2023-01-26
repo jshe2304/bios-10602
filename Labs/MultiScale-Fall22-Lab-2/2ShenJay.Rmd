@@ -1,0 +1,261 @@
+---
+title: "Lab 2 Answer Sheet"
+author: "BIOS 10602 - Multiscale Modeling of Biological Systems"
+date: "9/22/2021"
+output: html_document
+---
+
+```{r echo = FALSE}
+id <- c("ENO2", "TDH3", "RPL39", "GAL4", "POL12", "EST2") #protein codes
+protName <- c("enolase", "glyceraldehyde-3-phosphate dehydrogenase", "60S ribosomal protein L39", "regulatory protein Gal4", "DNA polymerase subunit alpha B", "telomerase reverse transcriptase") #full protein names
+abundance <- c(24563, 22369, 16232, 32.3, 13.7, 0.01) #cellular abundance in ppm
+length <- c(437, 332, 51, 881, 705, 884) #number of amino acids
+yeastProt <- data.frame(id, protName, abundance, length)
+```
+
+## Part 1: Data frames
+
+1.1 a <br>
+<span style="color:blue"> Returns all the elements in the first column. Returns the element in the third row and first column. Returns the first through sixth elements of the third column. Returns the columns specified by the vector, in this case columns 1 and 4. \span
+
+1.1 b<br>
+<span style="color:blue"> Data frames have two dimensions, and thus you must specify both the row and column to grab an element. Otherwise, you may be returned a vector representing a column or row or a slice of a column or row. \span
+
+1.2<br>
+<span style="color:blue"> For each element in the 4th column, if the element is greater than 300, TRUE is put into a vector, otherwise FALSE is. This vector is then used to index yeastProt. For all elements in column 2, if the corresponding element in the TRUE/FALSE vector is TRUE, the element is added to a vector which is returned afterward. \span
+
+1.3
+```{r}
+yeastProt$protName[yeastProt[, 4] > 300]
+yeastProt[yeastProt[, 4] > 300, "protName"]
+```
+
+1.4
+```{r}
+yeastProt[yeastProt[,4] > 100,]
+```
+
+## Part 2: Matrices
+2.1<br>
+<span style="color:blue"> When byRow is set TRUE, the matrix is filled with vectors by row, thus the vector (1, 2) will be the first row. When byRow is FALSE, the columns are filled first, thus (1, 2) would end up as the first column. </span>
+
+2.2
+```{r}
+x <- matrix(nrow = 5, ncol = 5, data = 1:25)
+mean(x)
+sd(x)
+sum(x)
+```
+<span style="color:blue"> R computes over all matrix elements </span>
+
+2.3
+```{r}
+mat <- matrix(nrow=4, ncol=4, data=1:16)
+mat[1,] <- c(10, 20, 30, 40)
+```
+
+2.4
+```{r}
+mat <- matrix(nrow=4, ncol=5, data=1:20)
+dim(mat)
+```
+<span style="color:blue"> First is number of rows. Second is number of columns. </span>
+
+
+## Part 3: Getting familiar with the Golub data
+```{r echo = FALSE, eval = FALSE}
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install("multtest") #uses Bioconductor's installation tool to install the multtest package
+library(multtest) #loads a library of tools included in the multtest package, including the golub data
+data(golub) #loads the golub dataset
+```
+
+```{r echo = FALSE, message = FALSE}
+#Silently runs the last two commands from above (to load the multtest library and the golub dataset)
+#in the R Markdown document's R envivonment; necessary for later code execution.
+library(multtest)
+data(golub)
+```
+
+3.1<br>
+<span style="color:blue"> Single DNA strands are mixed with known single DNA strands. If compatible, they will bond to form a double strand, which will then give off light due to additional substances mixed with the genetic material. By doing many of such comparisons, the levels of gene expression can be studied via which sample give off what kind of light.  \span
+
+3.2<br>
+<span style="color:blue"> Columns 1-27 represent ALL. 28-38 represent AML \span
+
+3.3<br>
+<span style="color:blue"> Gene names are Strings and can't be included with the golub matrix since it must be all decimal numbers \span
+
+3.4
+```{r}
+grep("cyclin D3", golub.gnames[,2], ignore.case=TRUE)
+```
+
+
+3.5
+```{r}
+mean(golub[1042, golub.cl == 0])
+mean(golub[1042, golub.cl == 1])
+```
+<span style="color:blue"> ALL => 1.893883; AML => 0.6355909 </span>
+
+3.6
+```{r}
+t.test(golub[1042,1:27],golub[1042,28:38])
+```
+<span style="color:blue"> p-value = 9.871e-06. We can reject the null hypothesis and conclude that the different values for the two groups did not just occur due to chance. Thus, we can be confident there was a significant differnece between levels of cyclin D3 gene expression between ALL and AML sufferers </span>
+
+3.7 a
+```{r}
+meanAML2 <- apply(golub[,28:38], 1, mean)
+```
+
+3.7 b
+```{r}
+meanALL2 <- apply(golub[,1:27], 1, mean)
+meanABS <- abs(meanALL2 - meanAML2)
+```
+
+3.8
+```{r}
+o <- order(meanABS, decreasing=TRUE)
+golub.gnames[o[1:8], 2]
+```
+
+3.9 a<br>
+<span style="color:blue"> MPO Myeloperoxidase; TCL1 gene; CYSTATIN A \span
+
+3.9 b<br>
+<span style="color:blue"> Genes also correlate with class distinction \span
+
+3.9 c<br>
+<span style="color:blue"> Genes cast weighted votes, depending on expression level in the new sample and the correlation with the class distinction \span
+
+3.10<br>
+```{r}
+gol.fac <- factor(golub.cl, levels=c(0,1), labels = c("ALL","AML"))
+```
+<span style="color:blue"> Creates a mapping so that the levels vector elements correspond to the corresponding labels elements within the golub.cl vector \span
+
+
+## Part 4: Making graphics in R
+
+4.1<br>
+```{r eval = FALSE}
+plot(golub[1042,])  
+plot(golub[1042,], col = 28)  
+plot(golub[1042,], col = 28, pch = 2)  
+plot(golub[1042,], col = 28, type='l')  
+plot(golub[1042,], col = 28, type='l', lty=2)  
+plot(golub[1042,], col = 28, type='l', lty=2, xlab="patient index", ylab="normalized cyclin D3 expression")  
+plot(golub[1042,], col = 28, type='l', lty=2, xlab="patient index", ylab="normalized cyclin D3 expression", main="Example of plotting in R")  
+```
+<span style="color:blue"> 
+col sets the color
+pch changes the shape of the points
+type changes the type of graph. In this case it becomes a line graph instead of a scatterplot
+lty changes the dotting of the graph
+xlab and ylab set xaxis and yaxis labels respectively
+main sets a title for the plot
+\span
+
+
+4.2
+```{r}
+stripchart(golub[1042,] ~ gol.fac, method="jitter", vertical=TRUE, xlab="Patient cancer subtype",  ylab="Normalized cyclin D3 expression")
+```
+
+4.3 a
+```{r}
+plot(golub[2663,], golub[2664,], col=gol.fac, main="IL-8 Gene Expression Values versus IL-8 Precursor Gene Expression Values", xlab="IL-8 Gene Expression Values", ylab="IL-8 Precursor Gene Expression Values")
+```
+
+4.3 b<br>
+<span style="color:blue"> The scatterplot of IL-8 and IL-8 precursor gene expression values shows much stronger correlation than the scatter plot of IL-8 and Zyxin precursor gene expression values. The latter plot is roughly positively linear while the former is strongly positively linear\span
+
+4.4
+```{r}
+hist(golub[1042,gol.fac == "ALL"], col="white", freq=FALSE, xlab="Normalized cyclin D3 expression", main="Distribution of normalized cyclin D3 expression in ALL")
+curve(dnorm(x, mean = mean(golub[1042,gol.fac=="ALL"]), sd = sd(golub[1042,gol.fac=="ALL"])), add=TRUE)
+```
+
+4.5
+```{r}
+par(mfrow=c(2, 1))
+hist(golub[1042,gol.fac == "ALL"], col="white", freq=FALSE, xlab="Normalized cyclin D3 expression", main="Distribution of normalized cyclin D3 expression in ALL")
+curve(dnorm(x, mean = mean(golub[1042,gol.fac=="ALL"]), sd = sd(golub[1042,gol.fac=="ALL"])), add=TRUE)
+hist(golub[1042,gol.fac == "AML"], col="white", freq=FALSE, xlab="Normalized cyclin D3 expression", main="Distribution of normalized cyclin D3 expression in AML")
+curve(dnorm(x, mean = mean(golub[1042,gol.fac=="AML"]), sd = sd(golub[1042,gol.fac=="AML"])), add=TRUE)
+```
+<span style="color:blue"> The gene in ALL appears slightly more normally distributed \span
+
+4.6
+```{r}
+par(mfrow=c(2, 1))
+hist(golub[1042,gol.fac == "ALL"], col="white", freq=FALSE, xlab="Normalized cyclin D3 expression", main="Distribution of normalized cyclin D3 expression in ALL", xlim=range(-1.5, 2))
+curve(dnorm(x, mean = mean(golub[1042,gol.fac=="ALL"]), sd = sd(golub[1042,gol.fac=="ALL"])), add=TRUE)
+hist(golub[1042,gol.fac == "AML"], col="white", freq=FALSE, xlab="Normalized cyclin D3 expression", main="Distribution of normalized cyclin D3 expression in AML", xlim=range(-1.5, 2))
+curve(dnorm(x, mean = mean(golub[1042,gol.fac=="AML"]), sd = sd(golub[1042,gol.fac=="AML"])), add=TRUE)
+```
+
+4.7 a
+```{r}
+grep("oncogene", golub.gnames[, 2], ignore.case = TRUE)
+```
+
+4.7 b<br>
+```{r}
+oncogenes <- grep("oncogene", golub.gnames[, 2], ignore.case = TRUE)
+meanABS <- abs(apply(golub[oncogenes,28:38], 1, mean) - apply(golub[oncogenes,1:27], 1, mean))
+o <- order(meanABS, decreasing=TRUE)
+golub.gnames[oncogenes[o[1]], 2]
+```
+<span style="color:blue"> GRO2 GRO2 oncogene \span
+
+4.7 c<br>
+```{r}
+meanABS <- abs(apply(golub[,1:27], 1, mean) - apply(golub[,28:38], 1, mean))
+o <- order(meanABS, decreasing=TRUE)
+"GRO2 GRO2 oncogene" %in% golub.gnames[o[1:30], 2]
+```
+<span style="color:blue"> Yes \span
+
+4.7 d<br>
+<span style="color:blue"> Recall that in their study, Golub et al did not use a pure mean for predictive strength, rather a weighted score based on broader neighborhood analysis. It is possible that the GRO2 GRO2 oncogene was not a strong a predictor when using this method.  \span
+
+4.8 a
+```{r}
+boxplot(golub[1042,] ~ gol.fac, vertical=TRUE, xlab="Patient cancer subtype",  ylab="Normalized cyclin D3 expression", col=NULL)
+```
+
+4.8 b<br>
+<span style="color:blue"> Box plots convey important figures of measurement such as median, quartiles, and outliers. Thus, if you wish to analyze distribution, the boxplot is your best bet. Strip charts also display distribution to a degree, but in return for less information than a boxplot, you preserve individual data points.  \span
+
+4.9
+```{r}
+plot(density(golub[1042,gol.fac=="ALL"]), col=3, xlim=range(-1, 3), xlab="Normalized cyclin D3 expression", main="Distribution of normalized cyclin D3 expression in leukemia patients")
+lines(density(golub[1042,gol.fac=="AML"]), col=4)
+legend(x=-1,y=1, legend=c("ALL","AML"), lty=1, col=c(3,4))
+```
+
+## Part 5: More advanced graphics in R
+
+5.1
+```{r}
+library(ggplot2)
+golub.data <- as.data.frame(t(golub))
+ggplot(data = golub.data) + geom_point(aes(x = golub.data[,2663], y = golub.data[,2664])) + ggtitle("IL-8 Gene Expression Values versus IL-8 Precursor Gene Expression Values") + xlab("IL-8 Gene Expression Values") + ylab("IL-8 Precursor Gene Expression Values") 
+```
+
+5.2
+```{r}
+pos <- grep("fumarylacetoacetate", golub.gnames[,2], ignore.case = TRUE)
+ggplot(data = golub.data) + geom_histogram(aes(x = golub.data[,pos]), binwidth = 0.1) + ggtitle("Histogram of Fumarylacetoacetate Gene Expression Levels") + xlab("Gene Expression") + ylab("Count") 
+```
+
+5.3
+```{r}
+ggplot(data = golub.data) + geom_boxplot(aes(x = gol.fac, y = golub.data[,pos])) + ggtitle("Box plots of Fumarylacetoacetate gene expression levels for ALL and AML patients") + xlab("Patient Type") + ylab("Gene Expression Levels") 
+```
+
